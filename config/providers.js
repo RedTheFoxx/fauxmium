@@ -9,16 +9,16 @@ export const PROVIDERS = {
     normalizedName: "openrouter",
     envKeys: ["OPENROUTER_API_KEY"],
     text: {
-      defaultModel: "google/gemini-3.5-flash",
+      defaultModel: "deepseek/deepseek-v4.1-flash",
       choices: [],
     },
     image: {
-      defaultModel: "google/gemini-2.5-flash-image",
+      defaultModel: "google/gemini-3.1-flash-lite-image",
       choices: [],
       supported: true,
     },
     video: {
-      defaultModel: "google/veo-3.1-fast",
+      defaultModel: "google/veo-3.1-lite",
       choices: [],
       supported: true,
     },
