@@ -4,6 +4,25 @@
  */
 
 export const PROVIDERS = {
+  openrouter: {
+    aliases: ["openrouter"],
+    normalizedName: "openrouter",
+    envKeys: ["OPENROUTER_API_KEY"],
+    text: {
+      defaultModel: "google/gemini-3.5-flash",
+      choices: [],
+    },
+    image: {
+      defaultModel: "google/gemini-2.5-flash-image",
+      choices: [],
+      supported: true,
+    },
+    video: {
+      defaultModel: "google/veo-3.1-fast",
+      choices: [],
+      supported: true,
+    },
+  },
   gemini: {
     aliases: ["gemini", "google"],
     normalizedName: "google",
@@ -61,7 +80,7 @@ export const PROVIDERS = {
       supported: true,
     },
     video: {
-      supported: false, // Falls back to gemini
+      supported: false, // Falls back to openrouter
     },
   },
   anthropic: {
@@ -80,10 +99,10 @@ export const PROVIDERS = {
       ],
     },
     image: {
-      supported: false, // Falls back to gemini
+      supported: false, // Falls back to openrouter
     },
     video: {
-      supported: false, // Falls back to gemini
+      supported: false, // Falls back to openrouter
     },
   },
   groq: {
@@ -103,18 +122,18 @@ export const PROVIDERS = {
       ],
     },
     image: {
-      supported: false, // Falls back to gemini
+      supported: false, // Falls back to openrouter
     },
     video: {
-      supported: false, // Falls back to gemini
+      supported: false, // Falls back to openrouter
     },
   },
 };
 
 // Default fallback providers
-export const DEFAULT_TEXT_PROVIDER = "gemini";
-export const DEFAULT_IMAGE_PROVIDER = "gemini";
-export const DEFAULT_VIDEO_PROVIDER = "gemini";
+export const DEFAULT_TEXT_PROVIDER = "openrouter";
+export const DEFAULT_IMAGE_PROVIDER = "openrouter";
+export const DEFAULT_VIDEO_PROVIDER = "openrouter";
 
 // Get provider config by name (handles aliases)
 export function getProviderConfig(name) {

@@ -2,7 +2,11 @@
  * Provider utility functions
  */
 
-import { getProviderConfig } from "../config/providers.js";
+import {
+  getProviderConfig,
+  DEFAULT_IMAGE_PROVIDER,
+  DEFAULT_VIDEO_PROVIDER,
+} from "../config/providers.js";
 
 /**
  * Normalize provider name to internal key (handles aliases)
@@ -72,7 +76,8 @@ export function validateApiKeys(providers, argv) {
  */
 export function getProviderDefaults(textProviderName) {
   const textConfig = getProviderConfig(textProviderName);
-  const geminiConfig = getProviderConfig("gemini");
+  const imageFallbackConfig = getProviderConfig(DEFAULT_IMAGE_PROVIDER);
+  const videoFallbackConfig = getProviderConfig(DEFAULT_VIDEO_PROVIDER);
 
   return {
     text: {
@@ -87,9 +92,9 @@ export function getProviderDefaults(textProviderName) {
           choices: textConfig.image.choices,
         }
       : {
-          provider: geminiConfig.key,
-          defaultModel: geminiConfig.image.defaultModel,
-          choices: geminiConfig.image.choices,
+          provider: imageFallbackConfig.key,
+          defaultModel: imageFallbackConfig.image.defaultModel,
+          choices: imageFallbackConfig.image.choices,
         },
     video: textConfig.video.supported
       ? {
@@ -98,9 +103,9 @@ export function getProviderDefaults(textProviderName) {
           choices: textConfig.video.choices,
         }
       : {
-          provider: geminiConfig.key,
-          defaultModel: geminiConfig.video.defaultModel,
-          choices: geminiConfig.video.choices,
+          provider: videoFallbackConfig.key,
+          defaultModel: videoFallbackConfig.video.defaultModel,
+          choices: videoFallbackConfig.video.choices,
         },
   };
 }

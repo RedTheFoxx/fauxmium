@@ -8,6 +8,7 @@ This document outlines the technologies used, development setup, technical const
 - Puppeteer — controls a visible Chrome instance, installs/sets up the extension, and intercepts network requests
 - Vercel AI SDK (`ai`) — unified streaming interface for multiple text providers
 - AI provider SDKs:
+  - `@openrouter/ai-sdk-provider` (text, images, and videos via Vercel AI SDK; default provider)
   - `@ai-sdk/google` (text, images, and videos via Vercel AI SDK)
   - `@ai-sdk/openai` (text via Vercel AI SDK)
   - `@ai-sdk/anthropic` (text via Vercel AI SDK)
@@ -17,18 +18,23 @@ This document outlines the technologies used, development setup, technical const
 
 ## Providers and Models
 
-- Text providers: Google (Gemini), OpenAI, Anthropic, Groq (via Vercel AI SDK)
-- Image provider: Google (Gemini) only at present
+- Text providers: OpenRouter, Google (Gemini), OpenAI, Anthropic, Groq (via Vercel AI SDK)
+- Image providers: OpenRouter, Google (Gemini)
+- Video providers: OpenRouter, Google (Gemini)
 - Defaults and examples:
-  - Default text provider: Google/Gemini with model `gemini-2.5-flash-lite`
-  - Default image provider: Google/Gemini with model `gemini-2.5-flash-image-preview`
+  - Default text provider: OpenRouter with model `google/gemini-3.5-flash`
+  - Default image provider: OpenRouter with model `google/gemini-2.5-flash-image`
+  - Default video provider: OpenRouter with model `google/veo-3.1-fast`
 - Notes:
-  - Selecting a non-Google image provider is not supported and will cause the image pipeline to error; the server returns a transparent placeholder image.
+  - OpenRouter accepts free-form model slugs (no `choices` restriction).
+  - OpenRouter requests `usage: { include: true }` and reports the exact per-request USD cost in `providerMetadata.openrouter` (chat: `usage.cost`; image/video: `cost`), which the cost calculator uses directly instead of Helicone pricing.
+  - Selecting an unsupported image/video provider will cause the pipeline to error; the server returns a transparent placeholder image.
 
 ## Environment Variables
 
 Set in a `.env` file at the project root or via your shell environment:
 
+- OPENROUTER_API_KEY — for OpenRouter text, images, and videos (default provider)
 - GEMINI_API_KEY or GOOGLE_API_KEY — for Google text and images
 - OPENAI_API_KEY — for OpenAI text
 - ANTHROPIC_API_KEY — for Anthropic text
@@ -49,7 +55,7 @@ index.js resolves keys automatically per selected provider. You can also pass ex
      - --port|-p (default 3001)
      - --devtools (open DevTools on launch)
      - --model|-m (text model)
-     - --image-provider (currently must be gemini/google)
+     - --image-provider (openrouter or gemini/google)
      - --image-model|-i (image model)
      - --api-key (text provider override)
      - --image-api-key (image provider override)
@@ -57,15 +63,16 @@ index.js resolves keys automatically per selected provider. You can also pass ex
 ## CLI Usage Overview
 
 - Default command (no subcommand):
-  - Text: Google/Gemini (`gemini-2.5-flash-lite`) and Images: Google/Gemini (`gemini-2.5-flash-image-preview`)
+  - Text: OpenRouter (`google/gemini-3.5-flash`), Images: OpenRouter (`google/gemini-2.5-flash-image`), Videos: OpenRouter (`google/veo-3.1-fast`)
 - Provider commands for text:
+  - fauxmium openrouter
   - fauxmium gemini
   - fauxmium openai
   - fauxmium anthropic
   - fauxmium groq
 - Image configuration:
-  - Per provider, there is a nested `images` subcommand that adjusts image settings; image provider must remain Google/Gemini for now.
-  - Example: fauxmium gemini images --image-model gemini-2.5-flash-image-preview
+  - Per provider, there is a nested `images` subcommand that adjusts image settings; supported image providers are openrouter and gemini/google.
+  - Example: fauxmium gemini images --image-model gemini-2.5-flash-image
 
 ## Server Endpoints
 
@@ -83,7 +90,7 @@ index.js resolves keys automatically per selected provider. You can also pass ex
     - lib/streamCodeBlocks.js — incrementally extracts ```html code fences
 - server/processImage.js:
   - Builds prompts from prompts/image.txt
-  - Uses lib/aiAdapter.js generateImage for Google/Gemini only
+  - Uses lib/aiAdapter.js generateImage for OpenRouter and Google/Gemini
   - Sends binary image response (fallback to transparent PNG on error)
 
 ## Chrome Extension
@@ -101,12 +108,12 @@ index.js resolves keys automatically per selected provider. You can also pass ex
   - External CSS/JS files are not fetched; generate inline CSS and JS within the streamed HTML
 - Stateless navigations:
   - No persistent state between page loads; each navigation is independent
-- Images:
-  - Only Google/Gemini image generation is supported; others fall back to a placeholder image
+- Images and videos:
+  - OpenRouter and Google/Gemini are supported; other selections fall back to a placeholder image
 - Pricing and usage:
-  - Cost tracking is based on token usage reported by the Vercel AI SDK; some providers may not return usage, in which case costs default to 0 for that request
+  - OpenRouter reports the exact per-request USD cost, which is used directly (Helicone lookup is skipped for openrouter)
+  - For other providers, cost tracking is based on token usage reported by the Vercel AI SDK; some providers may not return usage, in which case costs default to 0 for that request
   - Pricing is fetched from Helicone per model; unknown models default to 0 cost
-  - Image generation costs are not currently tracked
 - Browser/runtime:
   - Headful Chrome is launched (not headless) to support extension install and devtools
   - Referer is stripped (set to empty) when forwarding requests to the proxy as a temporary workaround
@@ -114,6 +121,7 @@ index.js resolves keys automatically per selected provider. You can also pass ex
 ## Dependencies (from package.json)
 
 - ai
+- @openrouter/ai-sdk-provider
 - @ai-sdk/google
 - @ai-sdk/openai
 - @ai-sdk/anthropic

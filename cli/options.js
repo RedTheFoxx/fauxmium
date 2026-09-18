@@ -63,7 +63,7 @@ export function imageOptions(
       type: "string",
       default: defaultProvider,
       describe:
-        "AI provider for image generation (default matches the chosen command provider). Non-Google image providers currently return a placeholder PNG.",
+        "AI provider for image generation (default matches the chosen command provider).",
       choices: supportedProviders.length ? supportedProviders : undefined,
     })
     .option("image-model", {
@@ -84,7 +84,7 @@ export function videoOptions(
       type: "string",
       default: defaultProvider,
       describe:
-        "AI provider for video generation (default matches the chosen command provider). Non-Google video providers currently return a placeholder MP4.",
+        "AI provider for video generation (default matches the chosen command provider).",
       choices: supportedProviders.length ? supportedProviders : undefined,
     })
     .option("video-model", {

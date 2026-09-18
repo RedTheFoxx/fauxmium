@@ -14,7 +14,11 @@ import {
   validateApiKeys,
   getProviderDefaults,
 } from "./providers.js";
-import { getProviderConfig, getProvidersWithFeature } from "../config/providers.js";
+import {
+  getProviderConfig,
+  getProvidersWithFeature,
+  DEFAULT_TEXT_PROVIDER,
+} from "../config/providers.js";
 import { startServer } from "../server/index.js";
 import { startBrowser } from "../browser.js";
 
@@ -97,14 +101,14 @@ export function buildProviderCommand(providerName, description) {
       });
 
       yy = imageOptions(yy, {
-        defaultProvider: defaults.image.provider || "gemini",
+        defaultProvider: defaults.image.provider || DEFAULT_TEXT_PROVIDER,
         defaultModel: defaults.image.defaultModel,
         choices: defaults.image.choices,
         supportedProviders: getProvidersWithFeature("image"),
       });
 
       yy = videoOptions(yy, {
-        defaultProvider: defaults.video.provider || "gemini",
+        defaultProvider: defaults.video.provider || DEFAULT_TEXT_PROVIDER,
         defaultModel: defaults.video.defaultModel,
         choices: defaults.video.choices,
         supportedProviders: getProvidersWithFeature("video"),
@@ -120,7 +124,7 @@ export function buildProviderCommand(providerName, description) {
           "Configure image generation provider and model (defaults to this command's provider)",
         builder: (z) =>
           imageOptions(z, {
-            defaultProvider: defaults.image.provider || "gemini",
+            defaultProvider: defaults.image.provider || DEFAULT_TEXT_PROVIDER,
             defaultModel: defaults.image.defaultModel,
             choices: defaults.image.choices,
             supportedProviders: getProvidersWithFeature("image"),
@@ -135,7 +139,7 @@ export function buildProviderCommand(providerName, description) {
           "Configure video generation provider and model (defaults to this command's provider)",
         builder: (z) =>
           videoOptions(z, {
-            defaultProvider: defaults.video.provider || "gemini",
+            defaultProvider: defaults.video.provider || DEFAULT_TEXT_PROVIDER,
             defaultModel: defaults.video.defaultModel,
             choices: defaults.video.choices,
             supportedProviders: getProvidersWithFeature("video"),
@@ -174,8 +178,8 @@ export function buildImageProviderCommand(providerName, description) {
     handler: (argv) => {
       // Force the image provider to this command's provider
       argv["image-provider"] = providerName;
-      // Keep text provider defaulting to Gemini
-      return run("gemini", argv);
+      // Keep text provider defaulting to the default text provider
+      return run(DEFAULT_TEXT_PROVIDER, argv);
     },
   };
 }
@@ -205,8 +209,8 @@ export function buildVideoProviderCommand(providerName, description) {
     handler: (argv) => {
       // Force the video provider to this command's provider
       argv["video-provider"] = providerName;
-      // Keep text provider defaulting to Gemini
-      return run("gemini", argv);
+      // Keep text provider defaulting to the default text provider
+      return run(DEFAULT_TEXT_PROVIDER, argv);
     },
   };
 }
@@ -227,14 +231,14 @@ export function buildDefaultCommand(defaultProvider) {
       });
 
       yy = imageOptions(yy, {
-        defaultProvider: defaults.image.provider || "gemini",
+        defaultProvider: defaults.image.provider || DEFAULT_TEXT_PROVIDER,
         defaultModel: defaults.image.defaultModel,
         choices: defaults.image.choices,
         supportedProviders: getProvidersWithFeature("image"),
       });
 
       yy = videoOptions(yy, {
-        defaultProvider: defaults.video.provider || "gemini",
+        defaultProvider: defaults.video.provider || DEFAULT_TEXT_PROVIDER,
         defaultModel: defaults.video.defaultModel,
         choices: defaults.video.choices,
         supportedProviders: getProvidersWithFeature("video"),

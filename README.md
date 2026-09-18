@@ -8,7 +8,7 @@ Not affiliated with any employer or product.
 
 ## Quick Start
 
-Run with default settings (Google/Gemini for text and images):
+Run with default settings (OpenRouter for text, images, and videos):
 
 ```bash
 npx fauxmium
@@ -29,6 +29,7 @@ npx fauxmium --devtools
 
 Place in a `.env` file at project root or export via your shell:
 
+- OPENROUTER_API_KEY — for OpenRouter text, images, and videos (default provider)
 - GEMINI_API_KEY or GOOGLE_API_KEY — for Google text and images
 - OPENAI_API_KEY — for OpenAI text
 - ANTHROPIC_API_KEY — for Anthropic text
@@ -39,6 +40,7 @@ The CLI automatically resolves keys from the environment. You can override with 
 Example `.env`:
 
 ```
+OPENROUTER_API_KEY=your_openrouter_key
 GEMINI_API_KEY=your_gemini_key
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
@@ -47,7 +49,7 @@ GROQ_API_KEY=your_groq_key
 
 ## CLI Usage
 
-Default command (no subcommand) uses Google/Gemini text and Google/Gemini images.
+Default command (no subcommand) uses OpenRouter for text, images, and videos.
 
 ```
 npx fauxmium [options]
@@ -56,6 +58,7 @@ npx fauxmium [options]
 Provider commands for text:
 
 ```
+npx fauxmium openrouter [options]
 npx fauxmium gemini   [options]
 npx fauxmium google   [options]   # alias of gemini
 npx fauxmium openai   [options]
@@ -70,16 +73,16 @@ Common options:
 - --devtools Open DevTools on launch (default: false)
 - --model, -m Text model (provider-specific defaults/choices)
 - --api-key Explicit API key for text provider (overrides env)
-- --image-provider Image provider (currently gemini/google only)
-- --image-model, -i Image model (e.g., gemini-2.5-flash-image)
+- --image-provider Image provider (openrouter or gemini/google)
+- --image-model, -i Image model (e.g., google/gemini-2.5-flash-image, gemini-2.5-flash-image)
 - --image-api-key Explicit API key for image provider (overrides env)
-- --video-provider Video provider (currently gemini/google only)
-- --video-model, -v Video model (e.g., veo-3.0-fast-generate-preview)
+- --video-provider Video provider (openrouter or gemini/google)
+- --video-model, -v Video model (e.g., google/veo-3.1-fast, veo-3.0-fast-generate-preview)
 - --video-api-key Explicit API key for video provider (overrides env)
 
 Image configuration:
 
-- Images are currently supported only via Google/Gemini.
+- Images are supported via OpenRouter and Google/Gemini.
 - You can configure image settings via:
   - the same provider command's nested `images` subcommand, or
   - the top-level `images` command with provider subcommands, or
@@ -87,7 +90,7 @@ Image configuration:
 
 Video configuration:
 
-- Videos are currently supported only via Google/Gemini.
+- Videos are supported via OpenRouter and Google/Gemini.
 - You can configure video settings via:
   - the same provider command's nested `videos` subcommand, or
   - the top-level `video` command with provider subcommands, or
@@ -96,11 +99,14 @@ Video configuration:
 Examples:
 
 ```bash
-# Default: Gemini text + images + videos
+# Default: OpenRouter text + images + videos
 npx fauxmium
 
-# OpenAI for text, Gemini for images and videos
-npx fauxmium openai --api-key $OPENAI_API_KEY --image-api-key $GEMINI_API_KEY --video-api-key $GEMINI_API_KEY
+# Choose text, image, and video models explicitly (OpenRouter)
+npx fauxmium openrouter -m google/gemini-3.5-flash -i google/gemini-2.5-flash-image -v google/veo-3.1-fast
+
+# OpenAI for text, OpenRouter for images and videos
+npx fauxmium openai --api-key $OPENAI_API_KEY --image-api-key $OPENROUTER_API_KEY --video-api-key $OPENROUTER_API_KEY
 
 # Change port/host and open DevTools
 npx fauxmium -p 8080 -H 127.0.0.1 --devtools
@@ -172,11 +178,11 @@ These are read from disk on each request, so you can tweak prompts without resta
 - State:
   - Navigations are stateless; there is no cross‑page memory at present.
 - Images and Videos:
-  - Only Google/Gemini image and video generation is supported at this time.
+  - Image and video generation is supported via OpenRouter and Google/Gemini.
 - Costs and usage:
-  - Pricing is fetched from Helicone per model; unknown models default to 0.
+  - OpenRouter reports the exact per-request USD cost; that value is used directly.
+  - For other providers, pricing is fetched from Helicone per model; unknown models default to 0.
   - Some providers may not report usage; such requests are counted as 0 cost.
-  - Image and video generation costs are not currently tracked.
 - Headers:
   - Referer is stripped (set to empty) for proxy‑bound requests as a temporary workaround.
 

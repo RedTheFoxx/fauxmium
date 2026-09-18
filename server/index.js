@@ -25,7 +25,7 @@ export async function startServer(
         );
       }
 
-      await loadCosts(model);
+      await loadCosts(model, textConfig.provider);
     } else {
       console.warn(
         "[costs] No text model configured; costs will be treated as 0."
@@ -44,7 +44,7 @@ export async function startServer(
     if (imageConfig?.model) {
       let { model } = imageConfig;
 
-      await loadCosts(model);
+      await loadCosts(model, imageConfig.provider);
     } else {
       console.warn(
         "[costs] No image model configured; costs will be treated as 0."
@@ -61,7 +61,7 @@ export async function startServer(
     if (videoConfig?.model) {
       let { model } = videoConfig;
 
-      await loadCosts(model);
+      await loadCosts(model, videoConfig.provider);
     } else {
       console.warn(
         "[costs] No video model configured; costs will be treated as 0."

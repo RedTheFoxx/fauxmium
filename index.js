@@ -43,7 +43,7 @@ yargs(hideBin(process.argv))
 
       return y.demandCommand(
         1,
-        "You need to specify an image provider command (gemini)."
+        "You need to specify an image provider command (openrouter, gemini)."
       );
     },
     handler: () => {},
@@ -67,7 +67,7 @@ yargs(hideBin(process.argv))
 
       return y.demandCommand(
         1,
-        "You need to specify a video provider command (gemini)."
+        "You need to specify a video provider command (openrouter, gemini)."
       );
     },
     handler: () => {},

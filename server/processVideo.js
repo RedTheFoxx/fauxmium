@@ -49,7 +49,7 @@ export async function processVideo(res, url, VideoConfig) {
       }
     }
 
-    const { mimeType, base64Data } = await generateVideo(
+    const { mimeType, base64Data, cost } = await generateVideo(
       VideoConfig,
       prompt,
       posterImageData ? { image: posterImageData } : {}
@@ -57,13 +57,16 @@ export async function processVideo(res, url, VideoConfig) {
 
     const binaryData = Buffer.from(base64Data, "base64");
 
-    const cost = costCalculator(VideoConfig.model, requestUrl);
+    const calculator = costCalculator(VideoConfig.model, requestUrl);
     // // https://ai.google.dev/gemini-api/docs/pricing#gemini-2.5-flash-Video-preview 1290 tokens = $0.000387
-    const usage = {
-      inputTokens: 0,
-      outputTokens: 8,
-    };
-    const costResult = cost({ usage, END: true });
+    const usage =
+      cost === undefined
+        ? {
+            inputTokens: 0,
+            outputTokens: 8,
+          }
+        : undefined;
+    const costResult = calculator({ usage, cost, END: true });
 
     console.log(
       `Video generated for ${requestUrl} with cost: $${costResult.cost.toFixed(

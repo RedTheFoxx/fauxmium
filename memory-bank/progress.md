@@ -5,7 +5,7 @@ This document tracks what works, what's left to build, the current status, known
 ## Current Status
 
 - Image and video generation are implemented using the Vercel AI SDK.
-- Cost tracking is active using usage metadata and Helicone pricing; surfaced via a Chrome extension popup.
+- Cost tracking is active using provider-reported per-request costs (OpenRouter) or usage metadata with Helicone pricing; surfaced via a Chrome extension popup.
 - Request interception policy is enforced (navigation + images only), ensuring deterministic I/O to the proxy and inline assets in generated HTML.
 
 ## What Works
@@ -22,10 +22,11 @@ This document tracks what works, what's left to build, the current status, known
   - `prompts/html.txt` and `prompts/image.txt` are loaded and interpolated dynamically at runtime (no restart required to tweak prompts).
   - Streamed text -> `processChunks` -> `costCalculator` + `streamCodeBlocks("html")` -> incremental HTTP response.
 - Providers and models:
-  - CLI via `yargs` with commands for `gemini/google`, `openai`, `anthropic`, `groq`; image configuration via nested `images` subcommand (Google-only).
+  - CLI via `yargs` with commands for `openrouter`, `gemini/google`, `openai`, `anthropic`, `groq`; image configuration via nested `images` subcommand (OpenRouter and Google).
+  - OpenRouter is the default text/image/video provider and accepts free-form model slugs.
   - API key resolution from environment or CLI flags.
 - Cost accounting:
-  - Per-model pricing fetched from Helicone, with 0-cost fallback if missing.
+  - OpenRouter per-request USD cost (from `providerMetadata.openrouter`) is used directly; other providers use per-model pricing fetched from Helicone, with 0-cost fallback if missing.
   - Per-request logs and session totals available at `/cost`.
   - Chrome extension popup displays total and a table of request costs.
 
@@ -36,7 +37,7 @@ This document tracks what works, what's left to build, the current status, known
 - Optional session memory:
   - Provide an opt-in state layer to carry context across navigations.
 - Image provider parity:
-  - Add non-Google image providers behind a common abstraction in `aiAdapter.js`.
+  - OpenRouter added; consider further providers behind a common abstraction in `aiAdapter.js`.
 - Cost UX and control:
   - Add a `/reset-costs` endpoint and refresh/reset UI in the extension popup.
   - Consider token estimation when providers omit usage, or explicitly mark unknown usage.
@@ -55,11 +56,11 @@ This document tracks what works, what's left to build, the current status, known
 - Subresource blocking:
   - External CSS/JS is blocked; HTML must contain inline CSS/JS (prompts encourage this).
 - Image limitations:
-  - Only Google/Gemini images are supported; selecting a different image provider will result in errors and a placeholder image being served.
+  - Only OpenRouter and Google/Gemini images and videos are supported; selecting a different provider will result in errors and a placeholder image being served.
 - Usage reporting:
   - Some providers may not return token usage; affected requests will log 0 cost.
 - Pricing data:
-  - Helicone may not have pricing for certain models; costs default to 0 for those.
+  - OpenRouter reports per-request cost directly; Helicone may not have pricing for other models, in which case costs default to 0.
 - Headers/Referer:
   - Referer is stripped (set to empty) as a temporary workaround; behavior may change with upstream Chromium updates.
 - Error handling:

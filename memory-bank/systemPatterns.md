@@ -26,7 +26,7 @@ Fauxmium is composed of these main components:
    - CLI entry (`bin`) built with `yargs`.
    - Parses provider/model/API key options for text and image generation.
    - Starts the proxy server and then launches the browser controller.
-   - Supports multiple text providers and a Google-only image provider (configurable models).
+   - Supports multiple text providers and OpenRouter/Google image and video providers (configurable models).
 
 4. Chrome Extension (`extension/`)
 
@@ -36,7 +36,7 @@ Fauxmium is composed of these main components:
 5. Libraries (`/lib`)
 
    - `aiAdapter.js` — Centralized provider-agnostic adapter for text streaming, image generation, and video generation using the Vercel AI SDK.
-   - `costCalculator.js` — Loads per-model costs from Helicone and accumulates per-request/session costs using usage metadata.
+   - `costCalculator.js` — Loads per-model costs from Helicone and accumulates per-request/session costs using usage metadata; prefers provider-reported per-request cost (OpenRouter) when present.
    - `prompts.js` — Loads and interpolates prompt templates from `prompts/*.txt`.
    - `processChunks.js` — Applies processors to streamed chunks and flushes an `END` sentinel.
    - `streamCodeBlocks.js` — Extracts a specific fenced code block (e.g., ```html) from streamed text safely and incrementally.
@@ -61,7 +61,7 @@ Fauxmium is composed of these main components:
      - Writes extracted HTML code block(s) to the client incrementally.
    - `/image`:
      - Builds an image prompt via `generatePrompt("image", { description })`.
-     - Calls `generateImage(imageConfig, prompt)` (Google-only for now).
+     - Calls `generateImage(imageConfig, prompt)` (OpenRouter or Google).
      - Returns binary image bytes with correct `Content-Type` and length.
      - On failure, serves a transparent 1x1 PNG placeholder.
    - `/cost`:
@@ -69,14 +69,14 @@ Fauxmium is composed of these main components:
 
 ## Providers and Models
 
-- Text generation providers (via Vercel AI SDK): Google (Gemini), OpenAI, Anthropic, Groq.
-- Image generation provider: Google (Gemini) only for now. Non-Google image provider selections will error and fall back to a placeholder image in the server handler.
+- Text generation providers (via Vercel AI SDK): OpenRouter (default), Google (Gemini), OpenAI, Anthropic, Groq.
+- Image/video generation providers: OpenRouter (default) and Google (Gemini). Unsupported provider selections will error and fall back to a placeholder image in the server handler.
 
 ## CLI Commands (high level)
 
-- Default (no command): Uses Google/Gemini text with `gemini-2.5-flash-lite` by default and Google/Gemini images.
-- Provider commands: `gemini`/`google`, `openai`, `anthropic`, `groq` with per-provider model defaults and choices.
-- Nested `images` subcommand under each provider to adjust image settings contextually, with images currently limited to Google.
+- Default (no command): Uses OpenRouter text (`google/gemini-3.5-flash`), images (`google/gemini-2.5-flash-image`), and videos (`google/veo-3.1-fast`).
+- Provider commands: `openrouter`, `gemini`/`google`, `openai`, `anthropic`, `groq` with per-provider model defaults and choices (openrouter accepts free-form slugs).
+- Nested `images` subcommand under each provider to adjust image settings contextually; supported image providers are openrouter and gemini/google.
 - Common options:
   - `--hostname|-H`, `--port|-p`, `--devtools`
   - `--model|-m`, `--image-model|-i`, `--image-provider`
@@ -84,8 +84,8 @@ Fauxmium is composed of these main components:
 
 ## Cost Tracking
 
-- On server start, `loadCosts(textModel)` fetches pricing from Helicone (`/api/llm-costs?model=...`).
-- During streaming, `costCalculator` reads `usageMetadata` (prompt/total token counts) from the Vercel AI SDK result and computes costs:
+- On server start, `loadCosts(model, provider)` fetches pricing from Helicone (`/api/llm-costs?model=...`); for `openrouter` the lookup is skipped since OpenRouter reports the exact per-request USD cost in `providerMetadata.openrouter`.
+- During streaming, `costCalculator` prefers a provider-reported `cost` on the chunk (OpenRouter); otherwise it reads `usageMetadata` (prompt/total token counts) from the Vercel AI SDK result and computes costs:
   - `input`: per-prompt-token rate
   - `output`: per-completion-token rate
 - Accumulates:
